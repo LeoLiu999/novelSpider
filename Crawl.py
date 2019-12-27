@@ -45,15 +45,13 @@ class spider:
 
     def run(self):
 
-        bookid = self.maxBookid
+        bookid = 1
         while(True):
 
-            if (bookid<1):
+            if ( bookid > self.maxBookid ):
                 break
 
-
             while(True):
-
 
                 for thread in self.threads:
                     if  not thread.is_alive():
@@ -78,7 +76,7 @@ class spider:
                 except Exception as err:
                     print(err)
 
-            bookid = bookid - 1
+            bookid = bookid + 1
 
 
     def getPageContent(self, bookid, site='shuquge'):
