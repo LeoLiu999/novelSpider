@@ -133,7 +133,7 @@ class spider:
         params = self.getBookContent(etreeHtml, bookid, site)
         if params is not None:
             self.redis.lpush(self.booksQueue, json.dumps(params) )
-            print("site:%s bookid:%s into bookqueue" % (site, bookid) )
+            #print("site:%s bookid:%s into bookqueue" % (site, bookid) )
 
 
 
@@ -174,7 +174,7 @@ class spider:
             }
             self.redis.lpush(self.articlesQueue, json.dumps(params))
             self.redis.hset(key, article_id, 1)
-            print("site:%s bookid:%s link:%s into articlequeue" % (site, bookid, link))
+            #print("site:%s bookid:%s link:%s into articlequeue" % (site, bookid, link))
 
 
 if __name__ == '__main__':
