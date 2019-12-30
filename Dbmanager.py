@@ -121,7 +121,10 @@ class Dbmanager:
 
             book_id = params['book_id']
 
-            sql ="INSERT INTO articles(`book_id`, `relation_flag`,`parent_flag`,`origin_site`,`title`,`content`,`sort_weight`,`create_time`) VALUES(%s, %s,%s,%s,%s,%s,%s,%s)"
+            hash_id = int(book_id) % 30
+            tableName = 'articles_%d' % (hash_id, )
+
+            sql ="INSERT INTO " +tableName+ "(`book_id`, `relation_flag`,`parent_flag`,`origin_site`,`title`,`content`,`sort_weight`,`create_time`) VALUES(%s, %s,%s,%s,%s,%s,%s,%s)"
             values = (
                         book_id,
                         params['relation_flag'], params['parent_flag'], params['origin_site'],
