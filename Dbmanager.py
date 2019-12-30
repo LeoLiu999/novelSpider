@@ -158,7 +158,12 @@ class Dbmanager:
     def getMaxArticleRelationFlag(self, parentFlag, originSite):
 
         try:
-            sql = "SELECT max(`relation_flag`) as max_relation_flag FROM `articles` WHERE parent_flag = %s and origin_site = %s LIMIT 1"
+            book_id = parentFlag
+
+            hash_id = int(book_id) % 30
+            tableName = 'articles_%d' % (hash_id,)
+
+            sql = "SELECT max(`relation_flag`) as max_relation_flag FROM "+tableName+" WHERE parent_flag = %s and origin_site = %s LIMIT 1"
             vals = (parentFlag, originSite)
             self.cursor.execute(sql, vals)
 
