@@ -89,11 +89,12 @@ class shuqugeSite:
         #进数据库
         intoMysqlParams = {
             'relation_flag': int(articleDict['article_id']),
-            'parent_flag' : int(articleDict['bookid']),
+            'parent_flag' : int(articleDict['relation_flag']),
             'origin_site': 'shuquge',
             'title': str(title),
             'content': str(content),
             'sort_weight' : int(articleDict['article_id']),
+            'book_id' : articleDict['book_id']
         }
         return intoMysqlParams
 

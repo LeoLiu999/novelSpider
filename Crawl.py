@@ -9,6 +9,7 @@ from shuquge import shuqugeSite
 import redis
 import json
 import re
+from Dbmanager import Dbmanager
 
 class spider:
 
@@ -58,7 +59,7 @@ class spider:
                         self.threads.remove(thread)
 
                 if ( len(self.threads ) > self.maxThreadNums ):
-                    time.sleep(0.5)
+                    time.sleep(self.delay)
                     continue
 
                 try:
@@ -94,9 +95,10 @@ class spider:
 
             etreeHtml = etree.HTML(bookContent)
 
-            self.getBookContentIntoRedis(etreeHtml, bookid, site)
+            relationId = self.getBookContentIntoMysql(etreeHtml, bookid, site)
 
-            self.getBookArticleHrefsIntoRedis(etreeHtml, bookid, site)
+            if relationId:
+                self.getBookArticleHrefsIntoRedis(etreeHtml, bookid, site, relationId)
 
         except Exception as err:
             print(err, 'bookid:',bookid)
@@ -135,11 +137,18 @@ class spider:
             self.redis.lpush(self.booksQueue, json.dumps(params) )
             #print("site:%s bookid:%s into bookqueue" % (site, bookid) )
 
+    def getBookContentIntoMysql(self, etreeHtml, bookid, site):
+        params = self.getBookContent(etreeHtml, bookid, site)
+        if params is not None:
+            dbmanager = Dbmanager()
+            return dbmanager.addBook(params=params)
 
 
-    def getBookArticleHrefsIntoRedis(self, etreeHtml, bookid, site):
+    def getBookArticleHrefsIntoRedis(self, etreeHtml, bookid, site, relationId):
 
         if (site == 'shuquge'):
+            db = Dbmanager()
+            maxId = db.getMaxArticleRelationFlag(parentFlag=bookid, originSite=site)
 
             hrefs = etreeHtml.xpath(u"/html/body/div[@class='listmain']/dl/dd/a[@href]")
 
@@ -152,29 +161,27 @@ class spider:
                     if not matchs:
                         continue
 
-                    article_id = matchs.group(1)
+                    article_id = int(matchs.group(1))
+                    if article_id <= maxId:
+                        continue
 
-
-
-                    self.articleHrefIntoRedis(bookid, article_id, link, site)
+                    self.articleHrefIntoRedis(bookid, article_id, link, site, relationId)
 
         else:
             return None
 
-    def articleHrefIntoRedis(self, bookid, article_id, link, site):
+    def articleHrefIntoRedis(self, bookid, article_id, link, site, relationId):
 
-        key = 'site:%s_bookid:%s' % (site, bookid)
+        params = {
+            'url': link,
+            'site': site,
+            'relation_flag': bookid,
+            'article_id': article_id,
+            'book_id' : relationId
+        }
+        self.redis.lpush(self.articlesQueue, json.dumps(params))
 
-        if not self.redis.hexists(key, article_id):
-            params = {
-                'url': link,
-                'site': site,
-                'bookid': bookid,
-                'article_id': article_id
-            }
-            self.redis.lpush(self.articlesQueue, json.dumps(params))
-            self.redis.hset(key, article_id, 1)
-            #print("site:%s bookid:%s link:%s into articlequeue" % (site, bookid, link))
+        #print("site:%s bookid:%s link:%s into articlequeue" % (site, bookid, link))
 
 
 if __name__ == '__main__':

@@ -22,6 +22,8 @@ class ArticleOutQueue:
         self.threads = []
         self.maxThreadNums = Const.MAX_THREAD_NUMS
 
+        self.delay = Const.DELAY
+
         self.requestHeaders = {
             'host': 'www.shuquge.com',
             'connection': "keep-alive",
@@ -38,7 +40,7 @@ class ArticleOutQueue:
 
             if not queue:
 
-                time.sleep(1)
+                time.sleep(self.delay)
                 continue;
 
             while True:
@@ -48,7 +50,7 @@ class ArticleOutQueue:
                         self.threads.remove(t)
 
                 if len(self.threads) > self.maxThreadNums:
-                    time.sleep(0.5)
+                    time.sleep(self.delay)
                     continue
 
                 th = threading.Thread(target=self.getArticle, name=None, args=(queue, ))
@@ -56,6 +58,7 @@ class ArticleOutQueue:
                 self.threads.append(th)
                 th.setDaemon(True)
                 th.start()
+                time.sleep(self.delay)
                 break
 
     def getArticle(self, queue):
@@ -83,7 +86,7 @@ class ArticleOutQueue:
 
     def requestGetArticle(self,queue):
         if( queue['site'] == 'shuquge' ):
-            url = 'http://www.shuquge.com/txt/%s/%s.html' % (queue['bookid'], queue['article_id'] )
+            url = 'http://www.shuquge.com/txt/%s/%s.html' % (queue['relation_flag'], queue['article_id'] )
         else:
             return None
 

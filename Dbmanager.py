@@ -15,7 +15,7 @@ class Dbmanager:
             'password' : Constant.MYSQL_PASSWORD,
             'database' : Constant.MYSQL_DB
         }
-        self.maxThreadNum = Constant.MAX_THREAD_NUMS + 5
+        self.maxThreadNum = Constant.MAX_THREAD_NUMS + 3
 
         self.categories = {
                 '玄幻奇幻': 1,
@@ -57,7 +57,9 @@ class Dbmanager:
                     params['relation_flag'],
                     params['origin_site'],
                 )
-
+                self.cursor.execute(sql, values)
+                self.connector.commit()
+                return one[0]
             else:
                 do = DownloadImage()
                 cover = do.download(params['cover'])
@@ -74,7 +76,7 @@ class Dbmanager:
                         params['relation_flag'],
                         params['origin_site'],
                         params['author'],
-                        params['category'],
+                        self.formatCategory( params['category'] ),
                         self.getCategoryId(params['category']),
                         params['words'],
                         params['state'],
@@ -83,10 +85,10 @@ class Dbmanager:
                         int(time.time())
                 )
 
+                self.cursor.execute(sql, values)
+                self.connector.commit()
 
-
-            self.cursor.execute(sql, values)
-            self.connector.commit()
+                return self.cursor.lastrowid
 
         except mysql.connector.Error as err:
             print('dbmanager:mysqlerror:',err)
@@ -105,25 +107,23 @@ class Dbmanager:
         except Exception as err:
             return  self.categories['default']
 
+    def formatCategory(self, category):
+        if category == '玄幻魔法':
+            return '玄幻奇幻'
+        else:
+            return category
 
     def addArticle(self, params):
 
         try:
-            sql = "SELECT * FROM `books` WHERE relation_flag = %s and origin_site = %s LIMIT 1"
-            vals = (params['parent_flag'], params['origin_site'])
-            self.cursor.execute(sql, vals)
 
-            one = self.cursor.fetchone()
 
-            if one is not None:
-                bookid = one[0]
-            else:
-                bookid = 0
 
+            book_id = params['book_id']
 
             sql ="INSERT INTO articles(`book_id`, `relation_flag`,`parent_flag`,`origin_site`,`title`,`content`,`sort_weight`,`create_time`) VALUES(%s, %s,%s,%s,%s,%s,%s,%s)"
             values = (
-                        bookid,
+                        book_id,
                         params['relation_flag'], params['parent_flag'], params['origin_site'],
                         params['title'], params['content'], params['sort_weight'],
                         int(time.time())
@@ -132,11 +132,44 @@ class Dbmanager:
             self.cursor.execute(sql, values)
             self.connector.commit()
 
+            sql = "UPDATE `books` SET update_article_time = %s where id = %s";
+            values = (
+
+                int(time.time()),
+                book_id
+            )
+            self.cursor.execute(sql, values)
+            self.connector.commit()
+
+
         except mysql.connector.Error as err:
             print(err)
             exit(1)
         except Exception as err:
             print('error:',err)
+            exit(1)
+        finally:
+            self.cursor.close()
+            self.connector.close()
+
+    def getMaxArticleRelationFlag(self, parentFlag, originSite):
+
+        try:
+            sql = "SELECT max(`relation_flag`) as max_relation_flag FROM `articles` WHERE parent_flag = %s and origin_site = %s LIMIT 1"
+            vals = (parentFlag, originSite)
+            self.cursor.execute(sql, vals)
+
+            one = self.cursor.fetchone()
+
+            if one[0]:
+                return int(one[0])
+            else:
+                return 0
+        except mysql.connector.Error as err:
+            print(err)
+            exit(1)
+        except Exception as err:
+            print('error:', err)
             exit(1)
         finally:
             self.cursor.close()
