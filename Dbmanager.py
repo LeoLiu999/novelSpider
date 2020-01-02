@@ -166,7 +166,7 @@ class Dbmanager:
             hash_id = int(book_id) % 30
             tableName = 'articles_%d' % (hash_id,)
 
-            sql = "SELECT max(`relation_flag`) as max_relation_flag FROM "+tableName+" WHERE parent_flag = %s and origin_site = %s LIMIT 1"
+            sql = "SELECT max(`sort_weight`) as max_relation_flag FROM "+tableName+" WHERE parent_flag = %s and origin_site = %s LIMIT 1"
             vals = (parentFlag, originSite)
             self.cursor.execute(sql, vals)
 

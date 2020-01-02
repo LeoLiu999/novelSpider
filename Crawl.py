@@ -10,6 +10,8 @@ import redis
 import json
 import re
 from Dbmanager import Dbmanager
+from bloom_filter import BloomFilter
+
 
 class spider:
 
@@ -43,6 +45,9 @@ class spider:
         self.booksQueue = 'books_detail_queue'
 
         self.articlesQueue = 'articles_url_queue'
+
+        self.articleHrefBloom = BloomFilter(1024 * 1024 * 16, 0.01)
+
 
     def run(self):
 
@@ -107,6 +112,7 @@ class spider:
     def doRequest(self, url):
 
         try:
+
             http = urllib3.PoolManager()
 
             response = http.request('get', url, headers=self.requestHeaders)
@@ -117,7 +123,8 @@ class spider:
             return response.data.lower().decode('utf-8')
 
         except Exception as err:
-            raise  err
+
+            raise err
 
 
 
@@ -172,14 +179,20 @@ class spider:
 
     def articleHrefIntoRedis(self, bookid, article_id, link, site, relationId):
 
-        params = {
-            'url': link,
-            'site': site,
-            'relation_flag': bookid,
-            'article_id': article_id,
-            'book_id' : relationId
-        }
-        self.redis.lpush(self.articlesQueue, json.dumps(params))
+        key = "%s:%s" % (bookid, article_id)
+
+        if key not in self.articleHrefBloom:
+
+            params = {
+                'url': link,
+                'site': site,
+                'relation_flag': bookid,
+                'article_id': article_id,
+                'book_id' : relationId
+            }
+            self.redis.lpush(self.articlesQueue, json.dumps(params))
+
+            self.articleHrefBloom.add(key)
 
         #print("site:%s bookid:%s link:%s into articlequeue" % (site, bookid, link))
 
