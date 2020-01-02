@@ -25,6 +25,7 @@ class Dbmanager:
                 '都市言情': 4,
                 '科幻灵异': 5,
                 '侦探推理': 6,
+                '恐怖悬疑': 6,
                 '网游动漫': 7,
                 '其他类型': 8,
                 'default': 8
@@ -110,6 +111,8 @@ class Dbmanager:
     def formatCategory(self, category):
         if category == '玄幻魔法':
             return '玄幻奇幻'
+        elif category == '侦探推理':
+            return '恐怖悬疑'
         else:
             return category
 
