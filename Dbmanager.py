@@ -127,11 +127,11 @@ class Dbmanager:
             hash_id = int(book_id) % 30
             tableName = 'articles_%d' % (hash_id, )
 
-            sql ="INSERT INTO " +tableName+ "(`book_id`, `relation_flag`,`parent_flag`,`origin_site`,`title`,`content`,`sort_weight`,`create_time`) VALUES(%s, %s,%s,%s,%s,%s,%s,%s)"
+            sql ="INSERT INTO " +tableName+ "(`book_id`, `relation_flag`,`parent_flag`,`origin_site`,`title`,`sort_weight`,`create_time`) VALUES(%s, %s,%s,%s,%s,%s,%s)"
             values = (
                         book_id,
                         params['relation_flag'], params['parent_flag'], params['origin_site'],
-                        params['title'], params['content'], params['sort_weight'],
+                        params['title'], params['sort_weight'],
                         int(time.time())
                       )
 
