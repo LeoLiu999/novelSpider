@@ -10,22 +10,19 @@ def tcplink(sock, addr):
 
     params = ''
     #sock.setblocking(0)
-    while True:
-        try:
-            data = sock.recv(1024)
 
-            if len(data) == 0:
-                break
+    try:
+        data = sock.recv(10240)
 
-            params = params + data.decode('utf-8')
+        params = params + data.decode('utf-8')
 
-        except BlockingIOError as err:
-            #print(err)
-            break
+    except BlockingIOError as err:
+        #print(err)
+        pass
 
-        except Exception as err:
-            print(err)
-            break
+    except Exception as err:
+        print(err)
+        pass
 
     if params == '':
 
@@ -65,7 +62,7 @@ def tcplink(sock, addr):
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 s.bind(('127.0.0.1', 16666))
-s.listen(5)
+s.listen(10)
 
 while True:
     sock, addr = s.accept()
