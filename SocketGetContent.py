@@ -57,8 +57,8 @@ def tcplink(sock, addr):
                 'content': ''
             }
 
-        sock.send(json.dumps(response).encode('utf-8'))
-        sock.close()
+    sock.send(json.dumps(response).encode('utf-8'))
+    sock.close()
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
