@@ -1,6 +1,21 @@
 # -*- coding: utf-8 -*-
 
+import urllib3
+from lxml import etree
+
+
 class shuqugeSite:
+
+    def __init__(self):
+        self.requestHeaders = {
+            'host': 'www.shuquge.com',
+            'connection': "keep-alive",
+            'cache-control': "no-cache",
+            'upgrade-insecure-requests': "1",
+            'user-agent': "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.95 Safari/537.36",
+            'accept': "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+            'accept-language': "zh-CN,en-US;q=0.8,en;q=0.6"
+        }
 
     def matchBookContent(self, etreeHtml, bookid):
 
@@ -98,3 +113,25 @@ class shuqugeSite:
         }
         return intoMysqlParams
 
+    def matchArticleContentById(self, book_id, article_id):
+        url = 'http://www.shuquge.com/txt/%d/%d.html' % (int(book_id), int(article_id))
+
+        try:
+
+            http = urllib3.PoolManager()
+
+            response = http.request('get', url, headers=self.requestHeaders)
+
+            if( response.status != 200 ):
+                raise Exception('Error:page status not 200')
+
+            html = response.data.lower().decode('utf-8')
+
+            etreeHtml = etree.HTML(html)
+
+            contentList = etreeHtml.xpath(u"/html/body/div[contains(@class, 'book')]/div[@class='content']/div[@id='content']/text()")
+
+            return contentList[0:-3]
+
+        except Exception as err:
+            raise err
