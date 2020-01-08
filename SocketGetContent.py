@@ -9,11 +9,13 @@ from shuquge import shuqugeSite
 def tcplink(sock, addr):
 
     params = ''
-    sock.setblocking(0)
+    #sock.setblocking(0)
     while True:
         try:
             data = sock.recv(1024)
 
+            if len(data) == 0:
+                break
 
             params = params + data.decode('utf-8')
 
