@@ -18,6 +18,9 @@ class spider:
     def __init__(self):
 
         self.maxBookid = Const.MAX_BOOKID
+
+        self.minBookid = Const.MIN_BOOKID
+
         self.requestHeaders = {
             'host': 'www.shuquge.com',
             'connection': "keep-alive",
@@ -51,7 +54,7 @@ class spider:
 
     def run(self):
 
-        bookid = 1
+        bookid = self.minBookid
         while(True):
 
             if ( bookid > self.maxBookid ):
