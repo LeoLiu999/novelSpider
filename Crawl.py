@@ -155,7 +155,7 @@ class spider:
 
         if (site == 'shuquge'):
             db = Dbmanager()
-            maxId = db.getMaxArticleRelationFlag(parentFlag=bookid, originSite=site)
+            maxId = db.getMaxArticleRelationFlag(parentFlag=bookid, originSite=site, book_id=relationId)
 
             hrefs = etreeHtml.xpath(u"/html/body/div[@class='listmain']/dl/dd/a[@href]")
 

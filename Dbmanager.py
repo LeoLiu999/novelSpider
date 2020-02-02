@@ -158,10 +158,9 @@ class Dbmanager:
             self.cursor.close()
             self.connector.close()
 
-    def getMaxArticleRelationFlag(self, parentFlag, originSite):
+    def getMaxArticleRelationFlag(self, parentFlag, originSite, book_id):
 
         try:
-            book_id = parentFlag
 
             hash_id = int(book_id) % 30
             tableName = 'articles_%d' % (hash_id,)
